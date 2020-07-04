@@ -59,5 +59,5 @@ pub fn decompress(mut infile: File) -> Result<Vec<u8>> {
         }
     }
 
-    Ok(vec![])
+    Ok(result)
 }
