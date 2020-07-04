@@ -1,3 +1,50 @@
+use std::fs::File;
+use std::io::Read;
+
+#[derive(Debug)]
+pub struct BitReader {
+    cont: Vec<u8>,
+    cur: u8,
+    idx: u8,
+    eof: bool,
+}
+
+impl BitReader {
+    pub fn new(mut cont: Vec<u8>) -> Self {
+        cont.reverse();
+        let first = cont.pop().expect("No first byte");
+        BitReader {
+            cont,
+            cur: first,
+            idx: 7,
+            eof: false,
+        }
+    }
+
+    pub fn incr(&mut self) {
+        if self.idx == 0 {
+            if self.cont.len() == 0 {
+                self.eof = true;
+            } else {
+                self.cur = self.cont.pop().expect("Ran out of bytes");
+                self.idx = 7;
+            }
+        } else {
+            self.idx -= 1;
+        }
+    }
+
+    pub fn get_bit(&mut self) -> Option<u8> {
+        if self.eof {
+            return None;
+        }
+        let mask = 1 << self.idx;
+        let result = Some(if self.cur & mask > 0 { 1 } else { 0 });
+        self.incr();
+        result
+    }
+}
+
 #[derive(Debug)]
 pub struct BitWriter {
     buf: Vec<u8>,
@@ -39,7 +86,25 @@ impl BitWriter {
 
 #[cfg(test)]
 mod test {
+    use super::BitReader;
     use super::BitWriter;
+
+    #[test]
+    fn reads_bits() {
+        let mut rdr = BitReader::new(vec![0b1101_0011, 0b0010_0000]);
+        let mut r1 = vec![];
+        for _ in 0..8 {
+            r1.push(rdr.get_bit().unwrap());
+        }
+        let mut r2 = vec![];
+        for _ in 0..8 {
+            r2.push(rdr.get_bit().unwrap());
+        }
+
+        assert_eq!(vec![1, 1, 0, 1, 0, 0, 1, 1], r1);
+        assert_eq!(vec![0, 0, 1, 0, 0, 0, 0, 0], r2);
+        assert_eq!(None, rdr.get_bit());
+    }
 
     #[test]
     fn writes_bits() {

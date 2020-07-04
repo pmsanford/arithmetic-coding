@@ -1,3 +1,4 @@
+mod common;
 mod compressor;
 mod decompressor;
 mod io;

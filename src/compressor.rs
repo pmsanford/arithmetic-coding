@@ -1,14 +1,10 @@
+use crate::common::*;
 use crate::io::BitWriter;
 use crate::model::Model;
 use anyhow::Result;
 use std::fs::File;
 use std::io::ErrorKind;
 use std::io::{BufReader, Read};
-
-const MAX_CODE: u32 = 0xFFFF;
-const ONE_FOURTH: u32 = 0x4000;
-const ONE_HALF: u32 = 0x8000;
-const THREE_FOURTHS: u32 = 0xC000;
 
 fn get_byte(reader: &mut BufReader<File>) -> Result<u32> {
     let mut buf = [0u8; 1];

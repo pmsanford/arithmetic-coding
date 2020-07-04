@@ -1,3 +1,5 @@
+use anyhow::{Error, Result};
+
 #[derive(Debug, Default)]
 pub struct Probability {
     pub high: u32,
@@ -45,5 +47,28 @@ impl Model {
         }
 
         p
+    }
+
+    pub fn get_char(&mut self, scaled_value: u32) -> Result<(u32, Probability)> {
+        for i in 0..257 {
+            if scaled_value < self.cumulative_frequency[i + 1] {
+                let c = i as u32;
+                let p = Probability {
+                    low: self.cumulative_frequency[i],
+                    high: self.cumulative_frequency[i + 1],
+                    count: self.cumulative_frequency[257],
+                };
+                if !self.frozen {
+                    self.update(c);
+                }
+                return Ok((c, p));
+            }
+        }
+
+        Err(Error::msg("Character not found"))
+    }
+
+    pub fn get_count(&self) -> u32 {
+        self.cumulative_frequency[257]
     }
 }
